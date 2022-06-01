@@ -1,2 +1,3 @@
 data/configdata.json
 node_modules/
+data/*/userdata/*.json
