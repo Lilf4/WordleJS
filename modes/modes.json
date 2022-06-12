@@ -1,0 +1,20 @@
+[
+	{
+		"type": "MODE",
+		"path": "./modes/wordle/wordle.js",
+		"orig": "wordle",
+		"aliases": [
+			"w"
+		],
+		"lang": [
+			"en"
+		]
+	},
+	{
+		"type": "CMD",
+		"path": "./cmds/quit.js",
+		"orig": "quit",
+		"aliases": [],
+		"lang": []
+	}
+]

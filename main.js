@@ -1,43 +1,36 @@
-const { Client, Intents, MessageEmbed } = require('discord.js');
-//var Game = require('./data/gamedata.json');
+const { Client, Intents} = require('discord.js');
 var configData = require('./data/configdata.json')
-
+const Handler = require("./gameHandler");
+var handler = new Handler();
 
 const client = new Client({
 	intents: [
 		Intents.FLAGS.GUILDS,
 		Intents.FLAGS.GUILD_MESSAGES,
 		Intents.FLAGS.DIRECT_MESSAGES
-	]
-})
+	],
+	partials: ["CHANNEL"]
+});
 
 client.on('ready', () => {
-	console.log('The bot is ready');
+	console.log('bot is ready');
 })
 
-client.on('messageCreate', (message) => {
-	if(message.content.startsWith(configData.PREFIX)){
-		CommandHandler(message);
-	}
-})
+client.on('messageCreate', message => handler.onMessage(message))
+//client.on('messageCreate', message => {message.channel.send("test");})
+
 
 client.login(configData.TOKEN);
+
+
 updateDay();
+
 function updateDay(){
 	//Game.WordleNum = Math.floor(new Date().getTime() / 8.64e+7) % Game.wordlist.length;
 	let d = new Date();
  	d.setUTCHours(24,0,0,0);
 	setTimeout(updateDay, d.getTime() - new Date().getTime());
 }
-
-function GetPlayer(){
-
-}
-
-function UnloadPlayer(){
-
-}
-
 
 function CommandHandler(message){
 	args = message.content.split(' ');
@@ -56,3 +49,4 @@ function CommandHandler(message){
 function test(){
 	return "SSS";
 }
+
