@@ -4,21 +4,22 @@
 //LEGALWORDS
 //LOCALIZED TEXT
 const fs = require('fs');
+const ModeCmd = require('../../cmd-types/modecmd');
 var activeUsers = {};
 
-class wordle 
+class wordle extends ModeCmd
 {
-	constructor(datapath)
+	constructor(baseArgs, loc)
 	{
-		this.datapath = datapath;
-		this.wordlist = JSON.parse(fs.readFileSync(datapath + '\\wordlist.json', 'utf8'));
-		this.loc = JSON.parse(fs.readFileSync(datapath + '\\loc.json', 'utf8'));
+		super(baseArgs);
+		this.loc = loc;
 		
 	}
+	
 
-	call(msg, args)
+	call(/* Discord.Message */msg, /* Array <string> */args)
 	{
-
+		console.log(fs.readFileSync(`${__dirname}/${this.loc}/wordlist.json`, {encoding:'utf8'}));
 	}
 	
 	

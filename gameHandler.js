@@ -1,29 +1,35 @@
 const cmdinfo = require("./modes/modes.json");
-const modes = new Map();
-const activeModes = new Map();
 const cmds = new Map();
 const aliases = new Map();
 const config = require("./data/configdata.json");
 
-//var activeGames = {};
-
+//LOOK INTO REFACTORING.... EVERYTHING BASICALLY
 class gameHandler
 {
-	constructor()
+	constructor(client)
 	{
+		this.client = client;
 		for(let cmd of cmdinfo)
 		{
-			switch(cmd.type)
+			let tmp = require(cmd.path);
+			cmd.baseArgs = [this.client, cmd.orig];
+
+			
+			switch(cmd.langs)
 			{
-				case 'CMD':
-					let tmp = require(cmd.path);
-					cmds.set(cmd.orig, new tmp());
+				case undefined:
+					let addcmd = (...args) => cmds.set(cmd.orig, new tmp(cmd.baseArgs, ...args));
+					if (cmd.ctorArgs instanceof Array) addcmd(...cmd.ctorArgs);
 					break;
-				case 'MODE':
-					modes.set(cmd.orig, cmd);
-					break;
+				default:
+					for(let lang of cmd.langs){
+						let addcmd = (...args) => cmds.set(`${cmd.orig}.${lang}`, new tmp(cmd.baseArgs, lang, ...args));
+						if (cmd.ctorArgs instanceof Array) addcmd(...cmd.ctorArgs);
+					}
+				break;
 			}
 			
+
 			for(let alias of cmd.aliases){
 				aliases.set(alias, cmd.orig);
 			}
@@ -31,6 +37,10 @@ class gameHandler
 
 	}
 
+	
+	//  1: Internal error
+	//  0: command was called
+	// -1: unknown command 
 	async onMessage(message){
 		if( 
 			message.channel.type != "DM" && !message.content.startsWith(config.PREFIX)
@@ -40,10 +50,21 @@ class gameHandler
 		let cmdstr = message.content;
 		if(cmdstr.startsWith(config.PREFIX)){cmdstr = cmdstr.substr(config.PREFIX.length)}
 		let parsed = this.parse(cmdstr);
-		console.log(parsed.cmd);
-		console.log(parsed.lang);
 
+		this.callCmd(message, parsed);
 	}
+
+	async callCmd(message, parsedCmd){
+		if(cmds.get(`${parsedCmd.cmd}.${parsedCmd.lang}`))
+		{
+			cmds.get(`${parsedCmd.cmd}.${parsedCmd.lang}`).call(message, parsedCmd.args);
+		}
+		if(cmds.get(`${parsedCmd.cmd}`))
+		{
+			cmds.get(`${parsedCmd.cmd}`).call(message, parsedCmd.args);
+		}
+	}
+
 	
 	//expected input:
 	//<cmd/mode>.<language?> <args?...>
@@ -55,41 +76,36 @@ class gameHandler
 			lang: "lang",
 			args: [arg1, arg2....]
 		}*/
+
+
 		let output = {
 			cmd: '',
 			lang: '',
 			args: []
 		}
 
-		let args = cmdstr.split([' ', '.']);
+		let args = cmdstr.split([' ']);
 		
-		//split the zero index (command) into cmd and lang
-		//CHANGE TO USE SPLIT INSTEAD OF IF STATEMENT
+		//get and remove cmd string from arguments list
 		output.cmd = args[0];
-		if(aliases[output.cmd]){output.cmd = aliases[output.cmd];}	
 		args.shift();
 
-
-
-
-		let index = args[0].indexOf('.', 0);
-		if(index != -1){
-			output.cmd = args[0].substring(0, index)
-			output.lang = args[0].substring(index + 1)
-		}
-		else{
-			output.cmd = args[0];
-		}
-		
-		//replace cmd alias if there is any
-		
-
-		//remove command from arguments
-		
+		//set output arguments
 		output.args = args;
 
+		//split cmd into cmd and lang
+		args = output.cmd.split(['.']);
+		output.cmd = args[0];
+		output.lang = args[1];
+
+		//replace cmd alias if there is any
+		if(aliases.get(output.cmd)){output.cmd = aliases.get(output.cmd);}	
+		
 		return output;
-	}
+
+
+		//maybe look into doing mode/language differently
+	} 
 
 }
 

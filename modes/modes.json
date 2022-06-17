@@ -1,20 +1,20 @@
 [
 	{
-		"type": "MODE",
 		"path": "./modes/wordle/wordle.js",
 		"orig": "wordle",
 		"aliases": [
 			"w"
 		],
-		"lang": [
-			"en"
-		]
+		"langs": [
+			"en",
+			"de"
+		],
+		"ctorArgs": []
 	},
 	{
-		"type": "CMD",
 		"path": "./cmds/quit.js",
 		"orig": "quit",
 		"aliases": [],
-		"lang": []
+		"ctorArgs": []
 	}
 ]
